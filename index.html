@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MO Performance Cockpit</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+:root{
+  color-scheme: dark;
+  /* defaults overwritten by JS theme engine */
+  --bg:#06080c; --bg2:#0b0e14; --card:#10141d; --card2:#161b26;
+  --ink:#f2f5f9; --sub:#8089a0; --faint:#5a6276; --line:#222a38; --line2:#2c3548;
+  --a1:#c6ff2f; --a1d:#9ccc1f; --a2:#19e3ff; --a3:#ff2d6e; --a4:#3b8cff;
+  --g1:rgba(25,227,255,.10); --g2:rgba(198,255,47,.08);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;color:var(--ink);
+  background:
+    radial-gradient(900px 500px at 80% -10%, var(--g1), transparent 60%),
+    radial-gradient(700px 500px at -10% 10%, var(--g2), transparent 55%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.022) 0 1px, transparent 1px 30px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.022) 0 1px, transparent 1px 30px),
+    var(--bg);
+  transition:background .4s ease;}
+.app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:90px;}
+header{padding:18px 18px 4px;}
+.hello{font-size:11px;color:var(--a1);letter-spacing:.22em;text-transform:uppercase;font-weight:700;}
+.title{font-size:25px;font-weight:800;margin:3px 0 0;letter-spacing:-.02em;text-transform:uppercase;font-style:italic;}
+.date{font-size:11.5px;color:var(--sub);margin-top:3px;letter-spacing:.04em;text-transform:uppercase;}
+
+/* theme switcher */
+.themebar{display:flex;gap:7px;padding:12px 18px 4px;}
+.tbtn{flex:1;cursor:pointer;border:1px solid var(--line2);background:var(--card);border-radius:9px;padding:8px 6px;text-align:left;font-family:inherit;color:var(--sub);transition:all .2s ease}
+.tbtn .sw{display:flex;gap:4px;margin-bottom:6px}
+.tbtn .sw i{width:13px;height:13px;border-radius:3px;display:block}
+.tbtn .nm{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;line-height:1.1}
+.tbtn.on{border-color:var(--a1);box-shadow:0 0 14px -2px var(--a1);color:var(--ink)}
+.demo{display:block;margin:6px 18px 0;font-size:9px;color:var(--faint);letter-spacing:.04em;text-transform:uppercase;}
+
+section{padding:0 18px}
+.tab{display:none}.tab.active{display:block;animation:fade .22s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.card{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.5);margin-bottom:13px;position:relative;overflow:hidden}
+.card h3{margin:0 0 2px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--sub)}
+.card .cap{font-size:11px;color:var(--faint);margin:0 0 12px;letter-spacing:.02em}
+
+.hero{background:linear-gradient(135deg,var(--card2),var(--bg2));border:1px solid var(--line2);}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,var(--g2),transparent 70%)}
+.hero h3{color:var(--a1)}
+.ring-wrap{display:flex;align-items:center;gap:18px;position:relative;z-index:1}
+.gauge{position:relative;width:108px;height:108px;flex:none}
+.gauge svg{transform:rotate(-90deg)}
+.gprog{stroke:var(--a1);filter:drop-shadow(0 0 6px var(--a1))}
+.gtrack{stroke:rgba(255,255,255,.07)}
+.gauge .val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge .num{font-size:34px;font-weight:800;line-height:1;font-style:italic;letter-spacing:-.02em}
+.gauge .lab{font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.14em;margin-top:2px}
+.hero .verdict{font-size:16px;font-weight:800;margin:0 0 5px;text-transform:uppercase;font-style:italic;letter-spacing:-.01em}
+.hero .verdict b{color:var(--a1)}
+.hero .why{font-size:11.5px;color:var(--sub);line-height:1.5}
+
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px;position:relative;overflow:hidden}
+.stat::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--accentbar,var(--line2))}
+.stat .k{font-size:9.5px;color:var(--sub);display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+.stat .v{font-size:24px;font-weight:800;margin-top:6px;letter-spacing:-.02em;font-style:italic}
+.stat .v small{font-size:11px;font-weight:600;color:var(--sub);font-style:normal}
+.delta{font-size:10.5px;font-weight:700;margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+.up{color:var(--a1)}.down{color:var(--a2)}
+.dot{width:7px;height:7px;border-radius:1px;display:inline-block;transform:rotate(45deg)}
+
+.rings{display:flex;align-items:center;gap:16px}
+.rings .leg{font-size:11.5px;line-height:1.85}
+.rings .leg b{font-weight:800;text-transform:uppercase;font-size:10.5px;letter-spacing:.08em}
+.rm{stroke:var(--a3)}.re{stroke:var(--a1)}.rs{stroke:var(--a2)}
+.rt{stroke:rgba(255,255,255,.10)}
+
+.chartbox{position:relative;height:190px}.chartbox.sm{height:150px}
+.src{font-size:9.5px;color:var(--faint);margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.pill{font-size:9px;background:rgba(255,255,255,.04);color:var(--sub);border:1px solid var(--line);padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.pill.g{color:var(--a1);border-color:var(--a1)}
+.pill.b{color:var(--a2);border-color:var(--a2)}
+.pill.o{color:var(--a4);border-color:var(--a4)}
+.pill.k{color:var(--a3);border-color:var(--a3)}
+
+.wk{display:flex;gap:5px;margin:4px 0 14px}
+.wk .d{flex:1;text-align:center;font-size:10px;color:var(--sub);padding:9px 0;border-radius:8px;border:1px solid var(--line);background:var(--card);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.wk .d.on{background:var(--a1);color:#06080c;border-color:var(--a1);box-shadow:0 0 14px -2px var(--a1)}
+.wk .d.done{border-color:var(--line2);color:var(--a1d)}
+.wk .d small{display:block;font-size:8px;margin-top:3px;opacity:.85;font-weight:600}
+
+.ex{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.ex:last-child{border-bottom:none}
+.thumb{width:64px;height:48px;border-radius:8px;flex:none;background:#0a0d13;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center}
+.i1{stroke:var(--a1)}.i2{stroke:var(--a2)}.tri{fill:var(--a1)}
+.ex .meta{flex:1;min-width:0}
+.ex .nm{font-size:13.5px;font-weight:800;text-transform:uppercase;letter-spacing:-.01em}
+.ex .sets{font-size:11.5px;color:var(--a1d);margin-top:2px;font-weight:600}
+.ex .desc{font-size:11px;color:var(--sub);margin-top:4px;line-height:1.45}
+.play{font-size:10px;color:var(--a2);font-weight:800;text-decoration:none;display:inline-flex;align-items:center;gap:4px;margin-top:5px;text-transform:uppercase;letter-spacing:.06em}
+
+.macro{margin-bottom:13px}
+.macro .top{display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;color:var(--sub);font-weight:700}
+.macro .top b{font-weight:800;color:var(--ink)}
+.bar{height:8px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:2px}
+.recipe{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.recipe:last-child{border-bottom:none}
+.rthumb{width:54px;height:54px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;font-size:24px;background:#0a0d13;border:1px solid var(--line2)}
+.recipe .nm{font-size:13px;font-weight:700}
+.recipe .mac{font-size:10.5px;color:var(--a1d);margin-top:3px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+
+.level{display:flex;align-items:center;gap:14px}
+.lvbadge{width:62px;height:62px;border-radius:12px;flex:none;background:linear-gradient(150deg,var(--card2),#0c0e08);border:1px solid var(--a1);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--a1);box-shadow:0 0 16px -3px var(--a1)}
+.lvbadge .l{font-size:8px;font-weight:800;letter-spacing:.14em}
+.lvbadge .n{font-size:26px;font-weight:800;line-height:1;font-style:italic}
+.xpbar{height:9px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;margin-top:9px}
+.xpbar>i{display:block;height:100%;background:linear-gradient(90deg,var(--a1d),var(--a1));border-radius:2px;box-shadow:0 0 10px -1px var(--a1)}
+.streak{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:800;text-transform:uppercase;font-style:italic}
+.badges{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center}
+.badge{font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.badge .ic{width:48px;height:48px;border-radius:10px;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:20px;background:#0a0d13;border:1px solid var(--line2)}
+.badge:not(.locked) .ic{border-color:var(--a1);box-shadow:0 0 10px -3px var(--a1)}
+.badge.locked .ic{filter:grayscale(1);opacity:.35}
+.quest{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+.quest:last-child{border:none}
+.quest .ic{font-size:18px;width:24px;text-align:center}
+.quest .meta{flex:1}
+.quest .nm{font-size:12.5px;font-weight:700}
+.quest .pr{font-size:10px;color:var(--sub);margin-top:1px;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.quest .rew{font-size:12px;font-weight:800;color:var(--a1);font-style:italic}
+.minibar{height:5px;background:rgba(255,255,255,.05);border-radius:2px;margin-top:5px;overflow:hidden}
+.minibar>i{display:block;height:100%;background:var(--a2);border-radius:2px}
+
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(6,8,12,.86);backdrop-filter:blur(16px);border-top:1px solid var(--line2);display:flex;padding:9px 6px calc(9px + env(safe-area-inset-bottom));z-index:20}
+.nav button{flex:1;background:none;border:none;color:var(--faint);font-size:9px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0;cursor:pointer;font-family:inherit;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.nav button svg{width:22px;height:22px}
+.nav button.on{color:var(--a1)}
+.nav button.on svg{filter:drop-shadow(0 0 5px var(--a1))}
+h2.sec{font-size:10.5px;text-transform:uppercase;letter-spacing:.16em;color:var(--a1);margin:18px 2px 9px;font-weight:800}
+
+/* physical age */
+.agecard{display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,var(--card2),var(--bg2));border:1px solid var(--line2)}
+.agecard .big{font-size:42px;font-weight:800;font-style:italic;color:var(--a1);line-height:.85;text-shadow:0 0 16px -4px var(--a1)}
+.agecard .ulab{font-size:8px;color:var(--faint);text-transform:uppercase;letter-spacing:.16em;margin-top:3px;text-align:center}
+
+/* transformation compare */
+.compare{display:flex;gap:8px;align-items:center}
+.cpanel{flex:1}
+.cphoto{aspect-ratio:3/4;border-radius:10px;background:linear-gradient(180deg,#161b1f,#0e1316);border:1px solid var(--line2);display:flex;align-items:flex-end;justify-content:center;position:relative;overflow:hidden}
+.cpanel.goal .cphoto{border-color:var(--a1);box-shadow:inset 0 0 26px -12px var(--a1)}
+.cphoto svg{height:84%;margin-bottom:-2px}
+.sil-cur{fill:#5a646c}.sil-goal{fill:var(--a1)}
+.cphoto .tag{position:absolute;top:6px;left:0;right:0;font-size:8px;text-align:center;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.cpanel.goal .cphoto .tag{color:var(--a1)}
+.clabel{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);font-weight:800;margin-top:7px;text-align:center}
+.cpanel.goal .clabel{color:var(--a1)}
+.cstat{font-size:10px;color:var(--a1d);text-align:center;margin-top:2px;font-weight:700}
+.cmid{flex:0 0 56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.cd{font-size:12px;font-weight:800;color:var(--ink);text-align:center;font-style:italic}
+.cd small{display:block;font-size:7.5px;color:var(--sub);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-style:normal}
+
+/* quick video clips */
+.clips{display:flex;gap:9px;overflow-x:auto;padding:1px 0 9px;margin-bottom:4px;-webkit-overflow-scrolling:touch}
+.clip{flex:none;width:130px;text-decoration:none}
+.clip .cv{position:relative;width:130px;height:75px;border-radius:9px;overflow:hidden;background:linear-gradient(135deg,#1a2024,#0c1013);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center}
+.clip .cv::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 55%,rgba(198,255,47,.12))}
+.pl{width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.45);border:1px solid var(--a1);display:flex;align-items:center;justify-content:center;z-index:1}
+.pl svg{width:12px;height:12px;fill:var(--a1)}
+.clip .cn{font-size:10px;color:var(--ink);margin-top:6px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;line-height:1.2}
+.clip .cd2{font-size:9px;color:var(--a1d);font-weight:700;margin-top:1px}
+a.vthumb{position:relative;text-decoration:none}
+a.vthumb .pl{position:absolute;inset:0;margin:auto;width:26px;height:26px}
+
+/* recipe cards */
+.rcard{border:1px solid var(--line);border-radius:13px;padding:11px;margin-bottom:10px;background:var(--card)}
+.rhead{display:flex;gap:12px;align-items:center}
+.rplate{width:60px;height:60px;border-radius:13px;flex:none;background:#0a0d13;border:1px solid var(--line2);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.rmeta{flex:1;min-width:0}
+.rmeta .nm{font-size:13px;font-weight:700;line-height:1.2}
+.rmeta .mac{font-size:10.5px;color:var(--a1d);margin-top:3px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.heart{flex:none;width:36px;height:36px;border:none;background:none;cursor:pointer;color:var(--faint);padding:0;display:flex;align-items:center;justify-content:center;transition:transform .15s ease}
+.heart:active{transform:scale(.82)}
+.heart.on{color:var(--a3)}
+.heart svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2}
+.heart.on svg{fill:currentColor;filter:drop-shadow(0 0 6px var(--a3))}
+.rtoggle{margin-top:10px;font-size:10px;color:var(--a2);font-weight:800;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;display:inline-flex;gap:6px;align-items:center;background:none;border:none;font-family:inherit;padding:0}
+.rtoggle svg{transition:transform .2s ease}
+.rtoggle.open svg{transform:rotate(180deg)}
+.rbody{display:none;margin-top:11px;border-top:1px solid var(--line);padding-top:11px}
+.rbody.open{display:block;animation:fade .2s ease}
+.rbody h5{margin:0 0 7px;font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--sub);font-weight:800}
+.ing{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.ing span{font-size:10.5px;background:rgba(255,255,255,.04);border:1px solid var(--line2);padding:3px 9px;border-radius:20px;color:var(--ink)}
+.steps{margin:0 0 12px;padding-left:16px}
+.steps li{font-size:11px;color:var(--sub);margin-bottom:5px;line-height:1.45}
+.buy{font-size:10px;color:#06080c;font-weight:800;text-transform:uppercase;letter-spacing:.05em;text-decoration:none;display:inline-flex;gap:5px;align-items:center;background:var(--a1);padding:7px 12px;border-radius:7px}
+
+/* AI coach banner */
+.aicoach{position:relative;border-radius:14px;padding:13px 14px 13px 16px;margin-bottom:13px;background:linear-gradient(135deg,var(--card2),var(--bg2));border:1px solid var(--a1);box-shadow:0 0 22px -12px var(--a1);overflow:hidden}
+.aicoach::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--a1)}
+.aicoach .ah{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.aicoach .ah svg{width:15px;height:15px;fill:var(--a1);filter:drop-shadow(0 0 5px var(--a1))}
+.aicoach .ah .t{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--a1)}
+.aicoach .ah .day{margin-left:auto;font-size:8.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.08em;font-weight:700;display:flex;align-items:center;gap:5px}
+.aicoach .ah .day::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--a1);box-shadow:0 0 6px var(--a1);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.aicoach .head{font-size:14px;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:-.01em;line-height:1.2;margin-bottom:4px}
+.aicoach .body{font-size:11.5px;color:var(--sub);line-height:1.5}
+.aicoach .arec{margin-top:9px;font-size:11px;color:var(--ink);line-height:1.45;background:rgba(255,255,255,.05);border:1px solid var(--line2);border-left:2px solid var(--a1);padding:7px 10px;border-radius:7px}
+.aicoach .arec b{color:var(--a1);text-transform:uppercase;letter-spacing:.05em;font-size:9.5px;font-weight:800}
+.aicoach .drivers{margin-top:8px;display:flex;flex-wrap:wrap;gap:5px}
+.aicoach .drivers span{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--sub);background:rgba(255,255,255,.04);border:1px solid var(--line);padding:2px 7px;border-radius:4px}
+
+/* Iron Man mission */
+.ironcard{position:relative;border-radius:16px;padding:16px;overflow:hidden;color:#fff;margin-bottom:13px;
+  background:
+   radial-gradient(130px 130px at 15% 32%, rgba(94,214,255,.38), transparent 62%),
+   linear-gradient(135deg,#4e0c10 0%,#9c1419 52%,#c8911f 145%);
+  border:1px solid #f0c24a;box-shadow:0 0 30px -10px rgba(230,120,40,.7)}
+.ironcard .tagrow{display:flex;align-items:center;gap:7px;margin-bottom:13px}
+.ironcard .tagrow .t{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;color:#ffd98a}
+.ironcard .badge2{margin-left:auto;font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#2a0a0b;background:#f0c24a;padding:3px 8px;border-radius:5px}
+.iron-main{display:flex;align-items:center;gap:16px}
+.reactor{position:relative;width:84px;height:84px;flex:none}
+.reactor svg{transform:rotate(-90deg);filter:drop-shadow(0 0 8px rgba(94,214,255,.85))}
+.reactor .val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.reactor .num{font-size:22px;font-weight:800;font-style:italic;line-height:1;color:#dff7ff}
+.reactor .lab{font-size:7.5px;text-transform:uppercase;letter-spacing:.1em;color:#bfe9ff;margin-top:2px}
+.iron-main .title{font-size:27px;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:-.02em;line-height:.92;text-shadow:0 2px 10px rgba(0,0,0,.45)}
+.iron-main .sub{font-size:10.5px;color:#ffe2b0;margin-top:5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.irondist{display:flex;gap:8px;margin-top:14px}
+.irondist .d{flex:1;background:rgba(0,0,0,.28);border:1px solid rgba(240,194,74,.4);border-radius:9px;padding:8px;text-align:center}
+.irondist .d .n{font-size:15px;font-weight:800;font-style:italic}
+.irondist .d .l{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:#ffd98a;margin-top:2px}
+.ironbar{margin-top:14px}
+.ironbar .top{display:flex;justify-content:space-between;font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:#ffe2b0;font-weight:800;margin-bottom:5px}
+.ironbar .bar{height:8px;background:rgba(0,0,0,.32);border-radius:20px;overflow:hidden}
+.ironbar .bar>i{display:block;height:100%;background:linear-gradient(90deg,#5ed6ff,#f0c24a);border-radius:20px;box-shadow:0 0 10px rgba(94,214,255,.6)}
+.iphase{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.iphase:last-child{border-bottom:none}
+.iphase .pn{flex:none;width:30px;height:30px;border-radius:8px;background:linear-gradient(150deg,#9c1419,#c8911f);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-style:italic;border:1px solid #f0c24a}
+.iphase .pm{flex:1;min-width:0}
+.iphase .pm .nm{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:-.01em}
+.iphase .pm .wks{font-size:9.5px;color:var(--a1d);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+.iphase .pm .rec{font-size:11px;color:var(--sub);margin-top:4px;line-height:1.45}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="hello">// OPS · SYSTEM ONLINE</div>
+  <div class="title">Moritz — Cockpit</div>
+  <div class="date">Tue · 16 June 2026 · 0600 · Giudecca</div>
+</header>
+
+<div class="themebar">
+  <button class="tbtn" data-theme="carbon"><div class="sw"><i style="background:#c6ff2f"></i><i style="background:#5cc8d6"></i><i style="background:#ff6a3d"></i></div><div class="nm">Carbon<br>Volt</div></button>
+  <button class="tbtn" data-theme="titanium"><div class="sw"><i style="background:#ff6a1a"></i><i style="background:#d9dde2"></i><i style="background:#f2b705"></i></div><div class="nm">Titanium</div></button>
+  <button class="tbtn" data-theme="neon"><div class="sw"><i style="background:#ff2bd6"></i><i style="background:#2bf0ff"></i><i style="background:#b14bff"></i></div><div class="nm">Midnight<br>Neon</div></button>
+</div>
+<span class="demo">◆ Tap a theme · Prototype data — live feed: Garmin · Withings · Strava · Apple Health</span>
+
+<!-- ===== TODAY ===== -->
+<section class="tab active" id="today">
+  <div class="aicoach" id="ai-today"></div>
+  <div class="card hero">
+    <h3>Readiness</h3>
+    <div class="ring-wrap">
+      <div class="gauge">
+        <svg width="108" height="108" viewBox="0 0 108 108">
+          <circle class="gtrack" cx="54" cy="54" r="47" fill="none" stroke-width="10"/>
+          <circle class="gprog" cx="54" cy="54" r="47" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="295" stroke-dashoffset="50"/>
+        </svg>
+        <div class="val"><div class="num">83</div><div class="lab">/ 100</div></div>
+      </div>
+      <div>
+        <p class="verdict">Primed — <b>push day</b></p>
+        <p class="why">HRV above 30-day baseline · sleep 7h22m · RHR 48 · Body Battery 76. Green light for max strength + intensity.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card agecard">
+    <div><div class="big">34</div><div class="ulab">Phys age</div></div>
+    <div style="flex:1">
+      <h3>Physical age</h3>
+      <div style="font-size:13px;color:var(--ink);font-weight:800;font-style:italic;text-transform:uppercase">7 yrs younger than calendar</div>
+      <div style="font-size:11px;color:var(--sub);margin-top:4px;line-height:1.45">Estimated from VO₂max 51, resting HR 48, body-fat % and activity load. Trending down.</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat" style="--accentbar:var(--a3)"><div class="k"><span class="dot" style="background:var(--a3)"></span>Resting HR</div><div class="v">48 <small>bpm</small></div><div class="delta down">▼ 2 vs 30d</div></div>
+    <div class="stat" style="--accentbar:var(--a1)"><div class="k"><span class="dot" style="background:var(--a1)"></span>HRV</div><div class="v">68 <small>ms</small></div><div class="delta up">▲ 6 baseline</div></div>
+    <div class="stat" style="--accentbar:var(--a2)"><div class="k"><span class="dot" style="background:var(--a2)"></span>Sleep</div><div class="v">7:22 <small>h</small></div><div class="delta up">▲ 88 score</div></div>
+    <div class="stat" style="--accentbar:var(--a4)"><div class="k"><span class="dot" style="background:var(--a4)"></span>VO₂max</div><div class="v">51 <small>ml/kg</small></div><div class="delta up">▲ Superior</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Activity Rings</h3>
+    <p class="cap">Today · synced from Apple Watch</p>
+    <div class="rings">
+      <div class="gauge" style="width:98px;height:98px">
+        <svg width="98" height="98" viewBox="0 0 98 98">
+          <circle class="rt" cx="49" cy="49" r="41" fill="none" stroke-width="7"/>
+          <circle class="rm" cx="49" cy="49" r="41" fill="none" stroke-width="7" stroke-linecap="round" stroke-dasharray="257" stroke-dashoffset="72" transform="rotate(-90 49 49)"/>
+          <circle class="rt" cx="49" cy="49" r="31" fill="none" stroke-width="7"/>
+          <circle class="re" cx="49" cy="49" r="31" fill="none" stroke-width="7" stroke-linecap="round" stroke-dasharray="195" stroke-dashoffset="20" transform="rotate(-90 49 49)"/>
+          <circle class="rt" cx="49" cy="49" r="21" fill="none" stroke-width="7"/>
+          <circle class="rs" cx="49" cy="49" r="21" fill="none" stroke-width="7" stroke-linecap="round" stroke-dasharray="132" stroke-dashoffset="11" transform="rotate(-90 49 49)"/>
+        </svg>
+      </div>
+      <div class="leg">
+        <div><b style="color:var(--a3)">Move</b> · 520 / 720 kcal</div>
+        <div><b style="color:var(--a1)">Exercise</b> · 48 / 60 min</div>
+        <div><b style="color:var(--a2)">Stand</b> · 11 / 12 hr</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Today's mission</h3>
+    <p class="cap">Auto-built from goals + readiness 83</p>
+    <div class="ex">
+      <div class="thumb"><svg viewBox="0 0 24 24" fill="none" class="i1" stroke-width="2"><path d="M6 8v8M18 8v8M4 12h16M4 9v6M20 9v6"/></svg></div>
+      <div class="meta"><div class="nm">Strength — Lower + Core</div><div class="sets">55 min · 6 lifts · progressive overload</div><div class="desc">Open the <b>Train</b> tab for sets, video &amp; cues.</div></div>
+    </div>
+    <div class="ex">
+      <div class="thumb"><svg viewBox="0 0 24 24" fill="none" class="i2" stroke-width="2"><path d="M4 18l5-9 4 5 3-6 4 10"/></svg></div>
+      <div class="meta"><div class="nm">Zone 2 — 30 min easy</div><div class="sets">Cap HR 138 · aerobic base + longevity</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BODY ===== -->
+<section class="tab" id="body">
+  <div class="aicoach" id="ai-body"></div>
+  <h2 class="sec">// Body composition</h2>
+  <div class="stats">
+    <div class="stat" style="--accentbar:var(--a2)"><div class="k">Weight</div><div class="v">79.4 <small>kg</small></div><div class="delta down">▼ 1.8kg / 8wk</div></div>
+    <div class="stat" style="--accentbar:var(--a3)"><div class="k">Body fat</div><div class="v">16.2 <small>%</small></div><div class="delta down">▼ 2.9 pts</div></div>
+    <div class="stat" style="--accentbar:var(--a1)"><div class="k">Muscle mass</div><div class="v">37.1 <small>kg</small></div><div class="delta up">▲ 0.9 kg</div></div>
+    <div class="stat" style="--accentbar:var(--a4)"><div class="k">Visceral</div><div class="v">6 <small>idx</small></div><div class="delta down">▼ 1 healthy</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Transformation — goal vs current</h3>
+    <p class="cap">Your latest photo against the target physique</p>
+    <div class="compare">
+      <div class="cpanel">
+        <div class="cphoto"><span class="tag">＋ Tap to add photo</span>
+          <svg viewBox="0 0 70 120"><g class="sil-cur"><circle cx="35" cy="15" r="8"/><path d="M25 25 L45 25 L48 42 L42 50 L41 76 L29 76 L28 50 L22 42 Z"/><path d="M25 26 L17 50 L21 51 L28 30 Z"/><path d="M45 26 L53 50 L49 51 L42 30 Z"/><path d="M29 76 L27 113 L34 113 L35 84 L36 113 L43 113 L41 76 Z"/></g></svg>
+        </div>
+        <div class="clabel">Current · 12 Jun</div>
+        <div class="cstat">16.2% BF · 79.4 kg</div>
+      </div>
+      <div class="cmid">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--a1)" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        <div class="cd">−5.2<small>% BF</small></div>
+        <div class="cd">−2.4<small>kg</small></div>
+        <div class="cd" style="color:var(--a1)">+1.5<small>kg musc</small></div>
+      </div>
+      <div class="cpanel goal">
+        <div class="cphoto"><span class="tag">🎯 Target</span>
+          <svg viewBox="0 0 70 120"><g class="sil-goal"><circle cx="35" cy="15" r="8"/><path d="M24 25 L46 25 L49 42 L42 49 L41 76 L29 76 L28 49 L21 42 Z"/><path d="M24 26 L16 50 L20 51 L27 30 Z"/><path d="M46 26 L54 50 L50 51 L43 30 Z"/><path d="M29 76 L27 113 L34 113 L35 84 L36 113 L43 113 L41 76 Z"/></g></svg>
+        </div>
+        <div class="clabel">Target</div>
+        <div class="cstat">~11% BF · 77 kg</div>
+      </div>
+    </div>
+    <div class="src"><span class="pill o">Withings</span><span class="pill b">Progress photos</span></div>
+  </div>
+
+  <div class="card"><h3>Recomposition</h3><p class="cap">Weight ▼ while muscle ▲ — the win</p><div class="chartbox"><canvas id="cBody"></canvas></div><div class="src"><span class="pill o">Withings Body Scan</span><span class="pill b">Apple Health</span></div></div>
+  <div class="card"><h3>Body fat %</h3><div class="chartbox sm"><canvas id="cFat"></canvas></div></div>
+  <div class="card"><h3>Recovery — RHR &amp; HRV</h3><p class="cap">Lower RHR + higher HRV = better recovery</p><div class="chartbox sm"><canvas id="cRec"></canvas></div><div class="src"><span class="pill g">Garmin</span><span class="pill b">Apple Watch</span></div></div>
+</section>
+
+<!-- ===== TRAIN ===== -->
+<section class="tab" id="train">
+  <div class="aicoach" id="ai-train"></div>
+  <h2 class="sec">// This week</h2>
+  <div class="wk">
+    <div class="d done">Mo<small>✓ Pull</small></div>
+    <div class="d done">Tu<small>✓ Z2</small></div>
+    <div class="d on">We<small>Legs</small></div>
+    <div class="d">Th<small>Push</small></div>
+    <div class="d">Fr<small>Run</small></div>
+    <div class="d">Sa<small>Full</small></div>
+    <div class="d">Su<small>Rest</small></div>
+  </div>
+
+  <h2 class="sec">// Quick clips — tap to play</h2>
+  <div class="clips">
+    <a class="clip" href="https://www.youtube.com/results?search_query=barbell+back+squat+form+short" target="_blank"><div class="cv"><span class="pl"><svg viewBox="0 0 24 24"><polygon points="8,6 18,12 8,18"/></svg></span></div><div class="cn">Back squat</div><div class="cd2">0:45 · form</div></a>
+    <a class="clip" href="https://www.youtube.com/results?search_query=romanian+deadlift+form+short" target="_blank"><div class="cv"><span class="pl"><svg viewBox="0 0 24 24"><polygon points="8,6 18,12 8,18"/></svg></span></div><div class="cn">RDL</div><div class="cd2">0:50 · form</div></a>
+    <a class="clip" href="https://www.youtube.com/results?search_query=bulgarian+split+squat+short" target="_blank"><div class="cv"><span class="pl"><svg viewBox="0 0 24 24"><polygon points="8,6 18,12 8,18"/></svg></span></div><div class="cn">Split squat</div><div class="cd2">0:40 · form</div></a>
+    <a class="clip" href="https://www.youtube.com/results?search_query=hanging+leg+raise+short" target="_blank"><div class="cv"><span class="pl"><svg viewBox="0 0 24 24"><polygon points="8,6 18,12 8,18"/></svg></span></div><div class="cn">Leg raise</div><div class="cd2">0:35 · core</div></a>
+  </div>
+
+  <div class="card">
+    <h3>Wed — Lower body + core</h3><p class="cap">55 min · adapts to last load &amp; readiness 83</p>
+    <div class="ex"><a class="thumb vthumb" href="https://www.youtube.com/results?search_query=barbell+back+squat+form" target="_blank"><span class="pl"><svg viewBox="0 0 24 24"><polygon points="9,7 17,12 9,17"/></svg></span></a><div class="meta"><div class="nm">Back squat</div><div class="sets">4 × 6 @ 92 kg · rest 2:30 · +2.5 kg</div><div class="desc">Brace, sit back, knees track over toes.</div><a class="play" href="https://www.youtube.com/results?search_query=barbell+back+squat+form" target="_blank">▶ Form video</a></div></div>
+    <div class="ex"><a class="thumb vthumb" href="https://www.youtube.com/results?search_query=romanian+deadlift+form" target="_blank"><span class="pl"><svg viewBox="0 0 24 24"><polygon points="9,7 17,12 9,17"/></svg></span></a><div class="meta"><div class="nm">Romanian deadlift</div><div class="sets">3 × 8 @ 80 kg · rest 2:00</div><div class="desc">Hinge at hips, soft knees, flat back.</div><a class="play" href="https://www.youtube.com/results?search_query=romanian+deadlift+form" target="_blank">▶ Form video</a></div></div>
+    <div class="ex"><a class="thumb vthumb" href="https://www.youtube.com/results?search_query=bulgarian+split+squat" target="_blank"><span class="pl"><svg viewBox="0 0 24 24"><polygon points="9,7 17,12 9,17"/></svg></span></a><div class="meta"><div class="nm">Bulgarian split squat</div><div class="sets">3 × 10 / leg · DB 22 kg</div><div class="desc">Front shin vertical, drive through heel.</div><a class="play" href="https://www.youtube.com/results?search_query=bulgarian+split+squat" target="_blank">▶ Form video</a></div></div>
+    <div class="ex"><a class="thumb vthumb" href="https://www.youtube.com/results?search_query=hanging+leg+raise" target="_blank"><span class="pl"><svg viewBox="0 0 24 24"><polygon points="9,7 17,12 9,17"/></svg></span></a><div class="meta"><div class="nm">Hanging leg raise + Plank</div><div class="sets">3 × 12 · plank 3 × 45 s</div><div class="desc">Controlled, no swing. Brace deep.</div><a class="play" href="https://www.youtube.com/results?search_query=hanging+leg+raise" target="_blank">▶ Form video</a></div></div>
+  </div>
+  <div class="card"><h3>Training load &amp; fitness</h3><p class="cap">Acute vs chronic — stay in the optimal band</p><div class="chartbox sm"><canvas id="cLoad"></canvas></div><div class="src"><span class="pill g">Garmin</span><span class="pill b">Strava</span><span class="pill k">Intervals.icu</span></div></div>
+
+  <h2 class="sec">// Mission: Iron Man</h2>
+  <div class="ironcard">
+    <div class="tagrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="#ffd98a"><path d="M12 2l2.6 6.6L22 9.3l-5.2 4.5L18.4 21 12 17.1 5.6 21l1.6-7.2L2 9.3l7.4-.7z"/></svg><span class="t">Long-range goal</span><span class="badge2">Target · Sep 2027</span></div>
+    <div class="iron-main">
+      <div class="reactor">
+        <svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="36" fill="none" stroke="rgba(0,0,0,.3)" stroke-width="8"/><circle cx="42" cy="42" r="36" fill="none" stroke="#5ed6ff" stroke-width="8" stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="140"/></svg>
+        <div class="val"><div class="num">38%</div><div class="lab">Race ready</div></div>
+      </div>
+      <div><div class="title">Iron<br>Man</div><div class="sub">140.6 — full-distance triathlon</div></div>
+    </div>
+    <div class="irondist">
+      <div class="d"><div class="n">3.8<span style="font-size:9px">km</span></div><div class="l">Swim</div></div>
+      <div class="d"><div class="n">180<span style="font-size:9px">km</span></div><div class="l">Bike</div></div>
+      <div class="d"><div class="n">42.2<span style="font-size:9px">km</span></div><div class="l">Run</div></div>
+    </div>
+    <div class="ironbar"><div class="top"><span>Race readiness</span><span>38% · on track</span></div><div class="bar"><i style="width:38%"></i></div></div>
+  </div>
+
+  <div class="card">
+    <h3>Roadmap — how to get there</h3>
+    <p class="cap">65-week build from your current base · adapts to load &amp; recovery</p>
+    <div class="iphase"><div class="pn">1</div><div class="pm"><div class="nm">Aerobic base</div><div class="wks">Wk 1–12 · now</div><div class="rec">3× Zone 2 per week — build easy runs to 60 min and rides to 2 hr. Keep 2× strength to protect joints and hold muscle. This is the engine everything else sits on.</div></div></div>
+    <div class="iphase"><div class="pn">2</div><div class="pm"><div class="nm">Swim foundation</div><div class="wks">Wk 13–24</div><div class="rec">Your weakest discipline, so attack it: 3 swims/week, technique first, then CSS intervals. Goal — 3 km continuous and comfortable by the end of the block.</div></div></div>
+    <div class="iphase"><div class="pn">3</div><div class="pm"><div class="nm">Bike volume</div><div class="wks">Wk 25–36</div><div class="rec">Extend the long ride toward 120 km, add one threshold session weekly. Start rehearsing race nutrition on the bike — 60–90 g carbs/hr.</div></div></div>
+    <div class="iphase"><div class="pn">4</div><div class="pm"><div class="nm">Brick &amp; run durability</div><div class="wks">Wk 37–48</div><div class="rec">Weekly bike→run bricks to train race legs; long run out to 30 km. Lock fueling and pacing at race intensity — this is where the day is won or lost.</div></div></div>
+    <div class="iphase"><div class="pn">5</div><div class="pm"><div class="nm">Peak &amp; taper</div><div class="wks">Wk 49–65</div><div class="rec">One 80% race simulation, then a disciplined 3-week taper. Sharpen, prioritise sleep, run the carb-load protocol — arrive light, fit and fresh.</div></div></div>
+  </div>
+</section>
+
+<!-- ===== FUEL ===== -->
+<section class="tab" id="fuel">
+  <div class="aicoach" id="ai-fuel"></div>
+  <h2 class="sec">// Today's targets</h2>
+  <div class="card">
+    <h3>Macros — adaptive</h3><p class="cap">Recalculated weekly from weight trend &amp; intake</p>
+    <div class="macro"><div class="top"><span>Protein</span><span><b>148</b> / 175 g</span></div><div class="bar"><i style="width:85%;background:var(--a1)"></i></div></div>
+    <div class="macro"><div class="top"><span>Carbs</span><span><b>180</b> / 240 g</span></div><div class="bar"><i style="width:75%;background:var(--a2)"></i></div></div>
+    <div class="macro"><div class="top"><span>Fat</span><span><b>52</b> / 70 g</span></div><div class="bar"><i style="width:74%;background:var(--a4)"></i></div></div>
+    <div class="macro"><div class="top"><span>Calories</span><span><b>1 980</b> / 2 480 kcal</span></div><div class="bar"><i style="width:80%;background:var(--a3)"></i></div></div>
+    <div class="src"><span class="pill k">MacroFactor</span><span class="pill b">Apple Health weight feed</span></div>
+  </div>
+  <h2 class="sec">// Recipes — pescatarian, high protein</h2>
+  <div class="rcard">
+    <div class="rhead">
+      <div class="rplate"><svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="25" fill="#1a2024"/><circle cx="30" cy="30" r="25" fill="none" stroke="#39424a" stroke-width="1.5"/><circle cx="30" cy="30" r="16" fill="#e9ecec"/><circle cx="24" cy="26" r="3.4" fill="#b83b54"/><circle cx="34" cy="24" r="3" fill="#6f2d86"/><circle cx="36" cy="32" r="3" fill="#b83b54"/><circle cx="26" cy="34" r="2.6" fill="#a9743f"/></svg></div>
+      <div class="rmeta"><div class="nm">Greek yogurt, berries &amp; walnuts</div><div class="mac">Breakfast · 38 g P · 320 kcal</div></div>
+      <button class="heart" data-dish="yogurt" aria-label="Like"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.5 8.2 2.2 5 5.4 5c2 0 3.4 1.1 4.2 2.4C10.2 6.1 11.6 5 13.6 5c3.2 0 4.9 3.2 3.4 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+    </div>
+    <button class="rtoggle"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg><span>Ingredients &amp; how-to</span></button>
+    <div class="rbody">
+      <h5>Ingredients to buy</h5>
+      <div class="ing"><span>200g Greek yogurt 0%</span><span>Mixed berries</span><span>30g walnuts</span><span>1 tsp honey</span></div>
+      <h5>How to</h5>
+      <ol class="steps"><li>Spoon yogurt into a bowl.</li><li>Top with berries and crushed walnuts.</li><li>Drizzle honey. Done in 2 minutes.</li></ol>
+      <a class="buy" href="#">＋ Add to shopping list</a>
+    </div>
+  </div>
+
+  <div class="rcard">
+    <div class="rhead">
+      <div class="rplate"><svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="25" fill="#1a2024"/><circle cx="30" cy="30" r="25" fill="none" stroke="#39424a" stroke-width="1.5"/><ellipse cx="24" cy="27" rx="8" ry="6.5" fill="#e58f8f"/><ellipse cx="37" cy="27" rx="7" ry="6" fill="#cdab6e"/><ellipse cx="30" cy="37" rx="8.5" ry="6" fill="#5f9e57"/></svg></div>
+      <div class="rmeta"><div class="nm">Seared tuna, quinoa &amp; edamame bowl</div><div class="mac">Lunch · 46 g P · 560 kcal</div></div>
+      <button class="heart" data-dish="tuna" aria-label="Like"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.5 8.2 2.2 5 5.4 5c2 0 3.4 1.1 4.2 2.4C10.2 6.1 11.6 5 13.6 5c3.2 0 4.9 3.2 3.4 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+    </div>
+    <button class="rtoggle"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg><span>Ingredients &amp; how-to</span></button>
+    <div class="rbody">
+      <h5>Ingredients to buy</h5>
+      <div class="ing"><span>150g tuna steak</span><span>80g quinoa</span><span>100g edamame</span><span>Soy &amp; sesame</span><span>Lime</span></div>
+      <h5>How to</h5>
+      <ol class="steps"><li>Cook quinoa, cool slightly.</li><li>Sear tuna 1 min each side, slice.</li><li>Build bowl, add edamame, dress with soy-sesame-lime.</li></ol>
+      <a class="buy" href="#">＋ Add to shopping list</a>
+    </div>
+  </div>
+
+  <div class="rcard">
+    <div class="rhead">
+      <div class="rplate"><svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="25" fill="#1a2024"/><circle cx="30" cy="30" r="25" fill="none" stroke="#39424a" stroke-width="1.5"/><ellipse cx="24" cy="27" rx="8" ry="6.5" fill="#e2733b"/><ellipse cx="37" cy="28" rx="7" ry="6" fill="#8a6b3f"/><ellipse cx="30" cy="37" rx="8.5" ry="6" fill="#4f8f46"/></svg></div>
+      <div class="rmeta"><div class="nm">Baked salmon, lentils &amp; greens</div><div class="mac">Dinner · 44 g P · 620 kcal</div></div>
+      <button class="heart" data-dish="salmon" aria-label="Like"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.5 8.2 2.2 5 5.4 5c2 0 3.4 1.1 4.2 2.4C10.2 6.1 11.6 5 13.6 5c3.2 0 4.9 3.2 3.4 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+    </div>
+    <button class="rtoggle"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg><span>Ingredients &amp; how-to</span></button>
+    <div class="rbody">
+      <h5>Ingredients to buy</h5>
+      <div class="ing"><span>180g salmon fillet</span><span>100g cooked lentils</span><span>Spinach</span><span>Garlic &amp; olive oil</span><span>Lemon</span></div>
+      <h5>How to</h5>
+      <ol class="steps"><li>Bake salmon at 200°C for 12 min.</li><li>Warm lentils with garlic; wilt spinach.</li><li>Plate, finish with lemon and olive oil.</li></ol>
+      <a class="buy" href="#">＋ Add to shopping list</a>
+    </div>
+  </div>
+
+  <div class="rcard">
+    <div class="rhead">
+      <div class="rplate"><svg viewBox="0 0 60 60" width="60" height="60"><rect x="21" y="13" width="18" height="35" rx="4" fill="#10151a" stroke="#39424a" stroke-width="1.5"/><rect x="23.5" y="24" width="13" height="22" rx="3" fill="#d8b48a"/><rect x="23.5" y="20" width="13" height="6" rx="3" fill="#efe2d0"/><rect x="32" y="9" width="2.4" height="14" rx="1" fill="#e58f8f"/></svg></div>
+      <div class="rmeta"><div class="nm">Whey + banana recovery shake</div><div class="mac">Post-workout · 32 g P · 280 kcal</div></div>
+      <button class="heart" data-dish="shake" aria-label="Like"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.5 8.2 2.2 5 5.4 5c2 0 3.4 1.1 4.2 2.4C10.2 6.1 11.6 5 13.6 5c3.2 0 4.9 3.2 3.4 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+    </div>
+    <button class="rtoggle"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg><span>Ingredients &amp; how-to</span></button>
+    <div class="rbody">
+      <h5>Ingredients to buy</h5>
+      <div class="ing"><span>1 scoop whey</span><span>1 banana</span><span>250ml milk</span><span>Ice</span></div>
+      <h5>How to</h5>
+      <ol class="steps"><li>Add everything to a blender.</li><li>Blend 30 seconds. Drink within 30 min of training.</li></ol>
+      <a class="buy" href="#">＋ Add to shopping list</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== GAME ===== -->
+<section class="tab" id="game">
+  <div class="aicoach" id="ai-game"></div>
+  <div class="card">
+    <h3>Your level</h3>
+    <div class="level">
+      <div class="lvbadge"><div class="l">LVL</div><div class="n">14</div></div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:800;text-transform:uppercase;font-style:italic">Athlete — Tier Silver</div>
+        <div style="font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-top:2px">2 480 / 3 000 XP → Lvl 15</div>
+        <div class="xpbar"><i style="width:82%"></i></div>
+      </div>
+    </div>
+    <div class="streak" style="margin-top:15px">🔥 <span>23-Day Streak</span> <span style="font-weight:600;color:var(--sub);font-size:11px;font-style:normal;text-transform:none">· longest 41</span></div>
+  </div>
+  <div class="card">
+    <h3>Weekly quests</h3><p class="cap">Complete for XP — resets Sunday</p>
+    <div class="quest"><div class="ic">🏋️</div><div class="meta"><div class="nm">Hit protein target 5 days</div><div class="pr">3 / 5 days</div><div class="minibar"><i style="width:60%"></i></div></div><div class="rew">+150</div></div>
+    <div class="quest"><div class="ic">🏃</div><div class="meta"><div class="nm">90 min Zone 2 cardio</div><div class="pr">60 / 90 min</div><div class="minibar"><i style="width:66%"></i></div></div><div class="rew">+120</div></div>
+    <div class="quest"><div class="ic">😴</div><div class="meta"><div class="nm">Sleep 7h+ for 4 nights</div><div class="pr">4 / 4 ✓</div><div class="minibar"><i style="width:100%;background:var(--a1)"></i></div></div><div class="rew">+100</div></div>
+    <div class="quest"><div class="ic">💪</div><div class="meta"><div class="nm">3 strength sessions</div><div class="pr">2 / 3</div><div class="minibar"><i style="width:66%"></i></div></div><div class="rew">+150</div></div>
+  </div>
+  <div class="card">
+    <h3>Badges</h3><p class="cap">8 of 24 unlocked</p>
+    <div class="badges">
+      <div class="badge"><div class="ic">🔥</div>Streak 21</div>
+      <div class="badge"><div class="ic">🏔️</div>VO₂ 50+</div>
+      <div class="badge"><div class="ic">⚖️</div>−2kg fat</div>
+      <div class="badge"><div class="ic">🌙</div>Sleep pro</div>
+      <div class="badge locked"><div class="ic">💎</div>Lvl 20</div>
+      <div class="badge locked"><div class="ic">🏅</div>100 wkts</div>
+      <div class="badge locked"><div class="ic">🐉</div>50-streak</div>
+      <div class="badge locked"><div class="ic">👑</div>Sub-15%</div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Squad leaderboard</h3><p class="cap">This week · Strava + cockpit XP</p>
+    <div class="quest"><div class="ic">🥇</div><div class="meta"><div class="nm">Luca</div><div class="pr">3 120 XP</div></div></div>
+    <div class="quest"><div class="ic">🥈</div><div class="meta"><div class="nm">You — Moritz</div><div class="pr">2 940 XP</div></div></div>
+    <div class="quest"><div class="ic">🥉</div><div class="meta"><div class="nm">Sofia</div><div class="pr">2 610 XP</div></div></div>
+  </div>
+</section>
+
+<nav class="nav">
+  <button class="on" data-t="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Today</button>
+  <button data-t="body"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2.4"/><path d="M12 8v7M12 9l-4 2M12 9l4 2M12 15l-3 5M12 15l3 5"/></svg>Body</button>
+  <button data-t="train"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8v8M18 8v8M3 12h18M3 9v6M21 9v6"/></svg>Train</button>
+  <button data-t="fuel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v7a3 3 0 006 0V3M9 3v18M17 3c-2 0-3 3-3 6s1 4 3 4v8"/></svg>Fuel</button>
+  <button data-t="game"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 2.6 1-5.5-4-3.9 5.5-.8z" transform="scale(.85) translate(2 1)"/></svg>Game</button>
+</nav>
+</div>
+
+<script>
+// ---- themes ----
+const THEMES={
+  carbon:{bg:'#181c1e',bg2:'#1e2326',card:'#222829',card2:'#2a3133',ink:'#eef1ec',sub:'#98a39a',faint:'#6d776e',line:'#333b3c',line2:'#414a4b',
+    a1:'#c6ff2f',a1d:'#9ccc1f',a2:'#5cc8d6',a3:'#ff6a3d',a4:'#c7a64a',g1:'rgba(92,200,214,.07)',g2:'rgba(198,255,47,.07)'},
+  titanium:{bg:'#0d0f12',bg2:'#14171c',card:'#181c22',card2:'#20242c',ink:'#f4f4f2',sub:'#9a9d9f',faint:'#6a6e72',line:'#262a30',line2:'#343a42',
+    a1:'#ff6a1a',a1d:'#cc5413',a2:'#d9dde2',a3:'#ff3b3b',a4:'#f2b705',g1:'rgba(255,106,26,.10)',g2:'rgba(217,221,226,.06)'},
+  neon:{bg:'#0a0716',bg2:'#120a24',card:'#170d2b',card2:'#1f1338',ink:'#f6f0ff',sub:'#9b8fc2',faint:'#6b5f95',line:'#2a1f47',line2:'#3a2c5e',
+    a1:'#ff2bd6',a1d:'#c91fa9',a2:'#2bf0ff',a3:'#b14bff',a4:'#ffd23b',g1:'rgba(43,240,255,.12)',g2:'rgba(255,43,214,.12)'}
+};
+let charts=[];
+function applyTheme(name){
+  const t=THEMES[name], r=document.documentElement.style;
+  for(const k in t) r.setProperty('--'+k, t[k]);
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.toggle('on', b.dataset.theme===name));
+  try{localStorage.setItem('mo-theme',name)}catch(e){}
+  buildCharts(t);
+}
+document.querySelectorAll('.tbtn').forEach(b=>b.addEventListener('click',()=>applyTheme(b.dataset.theme)));
+
+// ---- nav ----
+document.querySelectorAll('.nav button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    b.classList.add('on'); document.getElementById(b.dataset.t).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+// ---- AI coach (rotates daily) ----
+const REC={
+ today:[
+  {h:'Green light — go heavy',b:'Readiness 83 with HRV +6 above baseline and RHR at 48 — your nervous system is fully recovered and primed for force production. This is the day to express strength, not just accumulate volume.',a:'Work up to a heavy top set of 4×6 back squat (+2.5kg) and treat it as the session’s priority.',d:['Readiness 83','HRV +6','RHR 48']},
+  {h:'Prime before you push',b:'Recovery markers are strong but you trained lower body 48h ago and morning HRV suggests the tissue isn’t fully fresh. Quality beats intensity today — earn the heavy work with preparation.',a:'Add 8 min of hip/ankle mobility and 2 ramp-up sets before your first working set.',d:['Legs 48h','Sleep 7:22','Body Battery 76']},
+  {h:'Push the engine',b:'Sleep was 7h22m and Body Battery sits at 76 — aerobic capacity is the highest-leverage system to develop right now, and you have the recovery headroom to add intensity safely.',a:'Finish your Zone 2 with 6×1 min at threshold, 1 min easy between. Cap HR 165.',d:['VO₂max 51','Sleep 7:22','Battery 76']},
+  {h:'Bank an easy win',b:'Every recovery and load marker is in the green band — there is no reason to leave today to chance. Lock in the consistency that compounds and protect the streak before the day gets busy.',a:'Close all three rings before noon — a brisk 25-min walk covers Move and Exercise.',d:['Streak 23','Rings 72%','Readiness 83']},
+  {h:'Fuel the work first',b:'Recovery is solid but yesterday’s intake ran 500 kcal under target with a lower-body session ahead. Under-fuelling a heavy day blunts performance and bleeds into recovery.',a:'Front-load 40g protein + slow carbs at breakfast; don’t train fasted today.',d:['Cals −500','Protein gap','Legs today']},
+  {h:'Stack consistency',b:'Six green days in a row is exactly how fitness is built — but the risk now is doing too much because you feel good. Keep today controlled so tomorrow’s heavy session lands fresh.',a:'Hold all lifts at RPE 8 (one rep in reserve). No maxing today.',d:['6 green days','Readiness 83','HRV stable']}
+ ],
+ body:[
+  {h:'Recomp on track',b:'Body fat is down to 16.2% while lean mass climbed to 37.1kg over eight weeks — that divergence is the textbook signature of successful recomposition. The current plan is working; resist the urge to accelerate.',a:'Hold calories and protein where they are for two more weeks before any change.',d:['BF ↓16.2%','Muscle ↑37.1kg','8-wk trend']},
+  {h:'Capture this week’s photo',b:'Your last progress shot was two weeks ago and you’re approaching the visible-change zone under 15%. Photos catch what the scale misses and keep the goal comparison honest.',a:'Take a front + side photo in the same light today and drop it into the Body tab.',d:['Last photo 14d','Nearing 15%','BF ↓']},
+  {h:'Protect the muscle',b:'Lean mass is rising even in a deficit, which means recovery and protein are dialled in. The job now is to make sure the next kilo lost is fat — that comes down to protein and sleep, not bigger deficits.',a:'Hit ≥1.8g protein/kg every day and keep sleep above 7h.',d:['Muscle ↑0.9kg','Deficit working','Protein key']},
+  {h:'Trust the trend, not the scale',b:'Daily weight swings on water and glycogen — your 7-day average is down 0.3kg, exactly the rate that preserves muscle. A flat or up day this week is noise, not a stall.',a:'Weigh daily but only act on the weekly average. Don’t cut calories on a bad day.',d:['7-day −0.3kg','Target rate','Noise high']},
+  {h:'Visceral fat improving',b:'Your visceral index dropped to 6 — a strong longevity marker that responds well to steady aerobic work. Keep the Zone 2 volume flowing alongside the lifting.',a:'Add one extra 30-min Zone 2 session this week to keep pushing toward 5.',d:['Visceral 6','Longevity','Zone 2']}
+ ],
+ train:[
+  {h:'Add load on squats',b:'Last lower session logged at RPE 7 and today’s readiness is 83 — you left reps in the tank and have the recovery to spend them. Progressive overload only works if you actually add the load.',a:'Take back squat to 4×6 @ 94kg; keep accessories the same.',d:['Last RPE 7','Readiness 83','Overload due']},
+  {h:'Mind the acute load',b:'Your acute training load spiked to 410 against a chronic base of 385 — that ratio is creeping toward the injury-risk zone. Build fitness by raising the floor, not spiking the ceiling.',a:'Keep today strictly Zone 2, HR under 138. Save intensity for Friday.',d:['Acute 410','Chronic 385','Ratio high']},
+  {h:'Tempo for growth',b:'Your strength base is solid, so the limiter on muscle is time under tension, not load. Slowing the eccentric adds stimulus without needing heavier weights or more joint stress.',a:'Use a 3-second lowering phase on RDLs and split squats today.',d:['Strength solid','Hypertrophy','TUT']},
+  {h:'Core is the priority',b:'Core volume is the clear laggard this week and it underpins everything heavy you do. Front-load it so it doesn’t get skipped as the finisher again.',a:'Do the hanging leg raises and planks first, before the main lifts.',d:['Core lagging','Carryover','Anti-rotation']},
+  {h:'Deload on the horizon',b:'You’ve banked three progressively harder weeks — fatigue is now masking fitness. One more controlled week, then a deload will let the adaptations surface.',a:'Stop one rep shy of failure on every set today; schedule a deload next week.',d:['3 hard weeks','Fatigue↑','Deload soon']},
+  {h:'Run easy, win later',b:'VO₂max is trending up and the aerobic base you build now is what carries the long-range endurance goal. Going too hard on easy days is the most common way to stall it.',a:'Keep Friday’s run fully conversational — if you can’t chat, slow down.',d:['VO₂max ↑','Aerobic base','Polarised']}
+ ],
+ fuel:[
+  {h:'Close the protein gap',b:'You’re at 148 of 175g protein with a lifting session still ahead — that 27g shortfall is exactly what limits recovery and lean-mass retention in a deficit. Protein is the one macro not to miss.',a:'Have the whey + banana shake post-workout to close the gap.',d:['Protein 148/175','−27g','Legs today']},
+  {h:'Carb up around training',b:'You’re lifting heavy today and carb timing matters more than total on training days. Concentrating carbs around the session improves output and shuttles them toward muscle, not fat.',a:'Put ~60% of today’s carbs in lunch and the post-workout meal.',d:['Heavy day','Carb timing','Performance']},
+  {h:'Don’t under-fuel',b:'You’re at 1,980 of 2,480 kcal with an evening workout coming. A deficit this aggressive on a hard day risks muscle loss, poor sleep and a hit to tomorrow’s readiness.',a:'Eat a full pre-workout meal — aim to land within 200 kcal of target.',d:['Cals 1,980/2,480','Evening session','Deficit steep']},
+  {h:'Lean on your favourites',b:'You’ve liked the salmon + lentils dish and it happens to hit your protein and omega-3 targets perfectly tonight. Adherence beats optimisation — eat what you’ll actually repeat.',a:'Cook the salmon, lentils & greens for dinner; it’s pre-portioned to target.',d:['Liked meal','44g protein','Omega-3']},
+  {h:'Prep tomorrow tonight',b:'Tomorrow is another training day and the targets are easiest to hit when the food already exists. Quinoa and lentils keep perfectly for 3 days.',a:'Batch-cook a double portion of quinoa and lentils now.',d:['Training tmrw','Batch prep','Adherence']},
+  {h:'Hydration check',b:'Training load is elevated this week and even mild dehydration drags down HRV, power and perceived effort. It’s the cheapest performance gain available.',a:'Add 500ml water with a pinch of salt around today’s session.',d:['Load high','HRV link','Electrolytes']}
+ ],
+ game:[
+  {h:'Protect the streak',b:'You’re 23 days deep — the longest active streak in your squad — and the marginal effort to keep it today is tiny. Don’t lose hard-won momentum to a busy calendar.',a:'Hit 12 stand hours and a short walk; both rings close with a 25-min stroll.',d:['Streak 23','Squad lead','Low effort']},
+  {h:'One quest from a level',b:'You need 520 XP for Level 15 and the “3 strength sessions” weekly quest covers most of it. Finishing it this week tips you over and unlocks the next tier.',a:'Bank today’s strength session — that’s 2 of 3 quest sessions done.',d:['520 XP to L15','Quest 2/3','+150 XP']},
+  {h:'Chase the squad lead',b:'Luca is 180 XP ahead this week — a gap you can close in a single well-executed day. A little competition is exactly what keeps the habit sticky.',a:'Stack a Zone 2 session and your protein target today for +270 XP.',d:['Luca +180','Beatable','+270 XP']},
+  {h:'Sub-15% badge in reach',b:'Body fat is 16.2% and falling steadily — the “Sub-15%” badge is now a matter of weeks, not months. Steady beats drastic; keep doing what’s working.',a:'Hold the current deficit and protein; don’t crash-diet for the badge.',d:['BF 16.2%','Badge near','Steady']},
+  {h:'Bank weekend XP',b:'Two of your weekly quests sit at 66% with the reset on Sunday. Clearing them today removes any weekend pressure and locks the XP.',a:'Knock out the remaining Zone 2 minutes and one protein day today.',d:['2 quests 66%','Reset Sun','Easy clear']},
+  {h:'Rest is a move too',b:'A planned rest day still counts toward your streak and is the single best lever on tomorrow’s readiness. The smartest players in the game recover on purpose.',a:'Take an active recovery day: walk, mobility, early night. Streak stays intact.',d:['Recovery','Streak safe','Readiness↑']}
+ ]
+};
+function dayIdx(){const n=new Date();const s=new Date(n.getFullYear(),0,0);return Math.floor((n-s)/86400000);}
+function renderRecs(){
+  const di=dayIdx();
+  const spark='<svg viewBox="0 0 24 24"><path d="M12 2l1.9 5.6L19.5 9l-5.6 1.4L12 16l-1.9-5.6L4.5 9l5.6-1.4z"/><circle cx="19" cy="17.5" r="1.5"/><circle cx="5.2" cy="15" r="1.1"/></svg>';
+  for(const k in REC){
+    const el=document.getElementById('ai-'+k); if(!el)continue;
+    const r=REC[k][di%REC[k].length];
+    const drv=(r.d||[]).map(x=>'<span>'+x+'</span>').join('');
+    el.innerHTML='<div class="ah">'+spark+'<span class="t">AI Coach</span><span class="day">Updated today</span></div>'
+      +'<div class="head">'+r.h+'</div><div class="body">'+r.b+'</div>'
+      +(drv?'<div class="drivers">'+drv+'</div>':'')
+      +(r.a?'<div class="arec"><b>Do this</b><br>'+r.a+'</div>':'');
+  }
+}
+renderRecs();
+
+// ---- recipe hearts + expand ----
+const LK='mo-likes';
+const getLikes=()=>{try{return JSON.parse(localStorage.getItem(LK)||'[]')}catch(e){return[]}};
+const setLikes=a=>{try{localStorage.setItem(LK,JSON.stringify(a))}catch(e){}};
+document.querySelectorAll('.heart').forEach(h=>{
+  const id=h.dataset.dish;
+  if(getLikes().includes(id)) h.classList.add('on');
+  h.addEventListener('click',()=>{
+    h.classList.toggle('on');
+    let a=getLikes();
+    if(h.classList.contains('on')){if(!a.includes(id))a.push(id);} else {a=a.filter(x=>x!==id);}
+    setLikes(a);
+  });
+});
+document.querySelectorAll('.rtoggle').forEach(t=>{
+  t.addEventListener('click',()=>{
+    const body=t.parentElement.querySelector('.rbody');
+    const open=body.classList.toggle('open');
+    t.classList.toggle('open',open);
+    t.querySelector('span').textContent=open?'Hide recipe':'Ingredients & how-to';
+  });
+});
+document.querySelectorAll('.buy').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();b.textContent='✓ Added to list';setTimeout(()=>b.textContent='＋ Add to shopping list',1400);}));
+
+// ---- charts ----
+const wk=['8w','7w','6w','5w','4w','3w','2w','now'];
+function buildCharts(t){
+  charts.forEach(c=>c.destroy()); charts=[];
+  const grid={color:'rgba(255,255,255,.06)'}, tick={color:t.sub,font:{size:10}};
+  const leg={display:true,labels:{boxWidth:10,font:{size:10},color:t.sub}};
+  const base=(extra={})=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:tick},y:{grid,ticks:tick}},...extra});
+  charts.push(new Chart(cBody,{data:{labels:wk,datasets:[
+    {type:'line',label:'Weight',data:[81.2,80.9,80.7,80.3,80.1,79.9,79.6,79.4],borderColor:t.a2,backgroundColor:t.a2+'1f',fill:true,tension:.35,yAxisID:'y',pointRadius:0,borderWidth:2.5},
+    {type:'line',label:'Muscle',data:[36.2,36.3,36.5,36.6,36.7,36.8,37.0,37.1],borderColor:t.a1,tension:.35,yAxisID:'y1',pointRadius:0,borderWidth:2.5,borderDash:[4,3]}]},
+    options:base({plugins:{legend:leg},scales:{x:{grid:{display:false},ticks:tick},y:{position:'left',grid,ticks:{...tick,callback:v=>v+'kg'}},y1:{position:'right',grid:{display:false},ticks:{...tick,callback:v=>v+'kg'}}}})}));
+  charts.push(new Chart(cFat,{type:'line',data:{labels:wk,datasets:[{data:[19.1,18.6,18.1,17.6,17.3,16.9,16.5,16.2],borderColor:t.a3,backgroundColor:t.a3+'1f',fill:true,tension:.35,pointRadius:0,borderWidth:2.5}]},
+    options:base({scales:{x:{grid:{display:false},ticks:tick},y:{grid,ticks:{...tick,callback:v=>v+'%'}}}})}));
+  charts.push(new Chart(cRec,{data:{labels:wk,datasets:[
+    {type:'line',label:'RHR',data:[53,52,52,51,50,49,49,48],borderColor:t.a3,tension:.35,pointRadius:0,borderWidth:2.5,yAxisID:'y'},
+    {type:'line',label:'HRV',data:[55,57,58,60,62,64,66,68],borderColor:t.a1,tension:.35,pointRadius:0,borderWidth:2.5,yAxisID:'y1'}]},
+    options:base({plugins:{legend:leg},scales:{x:{grid:{display:false},ticks:tick},y:{position:'left',grid,ticks:tick},y1:{position:'right',grid:{display:false},ticks:tick}}})}));
+  charts.push(new Chart(cLoad,{data:{labels:wk,datasets:[
+    {type:'bar',label:'Acute',data:[320,340,360,300,380,410,390,400],backgroundColor:t.a1+'4d',borderColor:t.a1,borderWidth:1,borderRadius:3},
+    {type:'line',label:'Chronic (fitness)',data:[300,310,320,330,345,360,370,385],borderColor:t.a2,tension:.35,pointRadius:0,borderWidth:2.5}]},
+    options:base({plugins:{legend:leg}})}));
+}
+
+let start='carbon';
+try{const s=localStorage.getItem('mo-theme'); if(s&&THEMES[s])start=s;}catch(e){}
+applyTheme(start);
+</script>
+</body>
+</html>
