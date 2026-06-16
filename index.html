@@ -300,6 +300,18 @@ a.vthumb .pl{position:absolute;inset:0;margin:auto;width:26px;height:26px}
 .gchal .gbar{height:9px;background:rgba(255,255,255,.05);border-radius:20px;overflow:hidden}
 .gchal .gbar>i{display:block;height:100%;background:linear-gradient(90deg,var(--a1d),var(--a1));border-radius:20px;box-shadow:0 0 10px -2px var(--a1)}
 .note{font-size:10.5px;color:var(--sub);line-height:1.45;margin-top:10px;border-left:2px solid var(--a3);padding-left:9px}
+.av.em{font-size:17px}
+.ldr{color:var(--a1);font-weight:800;margin-left:5px;text-transform:uppercase;letter-spacing:.04em;font-size:9px}
+.potcard{background:linear-gradient(135deg,var(--card2),var(--bg2));border:1px solid var(--a1)}
+.potbig{font-size:34px;font-weight:800;font-style:italic;color:var(--a1);text-shadow:0 0 16px -4px var(--a1)}
+.rephead{display:flex;align-items:center;gap:11px;margin-bottom:9px}
+.rephead .mn{flex:1;font-size:14px;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:-.01em}
+.rephead .ci{font-size:11px;font-weight:800;font-style:italic;color:var(--a1);white-space:nowrap}
+.reptag{font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:3px 7px;border-radius:5px;white-space:nowrap}
+.reptag.good{color:#06080c;background:var(--a1)}
+.reptag.warn{color:var(--a3);border:1px solid var(--a3)}
+.rep div{font-size:11px;color:var(--sub);line-height:1.5;padding:2px 0 2px 14px;position:relative}
+.rep div::before{content:"▸";position:absolute;left:0;top:2px;color:var(--a1);font-size:8px}
 </style>
 </head>
 <body>
@@ -630,6 +642,28 @@ a.vthumb .pl{position:absolute;inset:0;margin:auto;width:26px;height:26px}
     </div>
   </div>
 
+  <div class="card potcard">
+    <div class="sqtop">
+      <div><div class="sqname">The Monthly Pot</div><div class="sqsub">Iron Coins → real money · June</div></div>
+      <div class="potbig">€480</div>
+    </div>
+    <div style="font-size:11.5px;color:var(--sub);line-height:1.5">Every Iron Coin the squad earns this month converts to the pot at <b style="color:var(--a1)">100 IC = €1</b> — <b style="color:var(--a1)">48 000 IC</b> banked so far. Paid out on 1 July, spent on whatever the squad votes for below.</div>
+    <div class="coinrow" style="margin-top:14px">
+      <div class="coinbox"><div class="cnum">€480</div><div class="clab">Pot this month</div></div>
+      <div class="coinbox"><div class="cnum">€80</div><div class="clab">Your share earned</div></div>
+      <div class="coinbox"><div class="cnum">14 d</div><div class="clab">Until payout</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Where the pot goes — team vote</h3>
+    <p class="cap">Whatever wins, the €480 funds it · one vote each · changeable until payout</p>
+    <div class="mrow"><div class="av em">🍸</div><div class="mm"><div class="mn">Dinner &amp; drinks · Experimental, Venice</div><div class="ms"><b class="vc" data-opt="exp">3</b> votes <span class="ldr" data-opt="exp"></span></div><div class="mbar"><i class="vbar" data-opt="exp"></i></div></div><button class="btn vote" data-opt="exp">Vote</button></div>
+    <div class="mrow"><div class="av em">🌊</div><div class="mm"><div class="mn">Donation · Venice lagoon clean-up</div><div class="ms"><b class="vc" data-opt="cause">2</b> votes <span class="ldr" data-opt="cause"></span></div><div class="mbar"><i class="vbar" data-opt="cause"></i></div></div><button class="btn vote" data-opt="cause">Vote</button></div>
+    <div class="mrow"><div class="av em">⛷️</div><div class="mm"><div class="mn">Squad ski day fund · Dolomites</div><div class="ms"><b class="vc" data-opt="ski">1</b> votes <span class="ldr" data-opt="ski"></span></div><div class="mbar"><i class="vbar" data-opt="ski"></i></div></div><button class="btn vote" data-opt="ski">Vote</button></div>
+    <div class="note" style="border-color:var(--a1);color:var(--sub)">Want another option? Anyone can propose one and it appears here for the squad to back.</div>
+  </div>
+
   <div class="card">
     <h3>This week's commitments</h3>
     <p class="cap">Everyone pledged a target · nudge anyone falling behind</p>
@@ -702,12 +736,78 @@ a.vthumb .pl{position:absolute;inset:0;margin:auto;width:26px;height:26px}
   </div>
 </section>
 
+<!-- ===== TEAM REPORT ===== -->
+<section class="tab" id="team">
+  <h2 class="sec">// Squad report · last 30 days</h2>
+  <div class="card">
+    <div class="rephead"><div class="av c2">L</div><div class="mn">Luca</div><span class="reptag good">Top</span><div class="ci">3 120 IC</div></div>
+    <div class="rep">
+      <div>6 of 6 sessions this week — squad-leading training volume.</div>
+      <div>Just PR'd back squat at 100 kg; strongest lifter in the club.</div>
+      <div>Carries the highest training load — acute spike to watch.</div>
+      <div>Sleep slipping to ~6h; recovery is his weak point.</div>
+      <div>Leads your Zone 2 duel 75 vs 60 and sits #1 overall.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="rephead"><div class="av">M</div><div class="mn">You — Moritz</div><span class="reptag good">Rising</span><div class="ci">2 940 IC</div></div>
+    <div class="rep">
+      <div>18 of 30 days trained — consistency strong, 4 this week.</div>
+      <div>Squat +7.5 kg over the block; on track for 100 kg.</div>
+      <div>VO₂max 51 and climbing, with a solid Zone 2 base.</div>
+      <div>Best recovery in the group — HRV +6, RHR 48, 7h+ sleep.</div>
+      <div>Recomp working: −2.9% body fat, +0.9 kg muscle. Rank #2.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="rephead"><div class="av c3">S</div><div class="mn">Sofia</div><span class="reptag good">Reliable</span><div class="ci">2 610 IC</div></div>
+    <div class="rep">
+      <div>Hit her 4 of 4 pledge — never misses a commitment.</div>
+      <div>14-day streak, the longest active run in the club.</div>
+      <div>Very consistent; intensity is her next gear.</div>
+      <div>Nutrition dialled — protein target most days.</div>
+      <div>Climbing steadily; a real promotion contender. Rank #3.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="rephead"><div class="av c3">T</div><div class="mn">Tobias</div><span class="reptag good">Breakout</span><div class="ci">2 180 IC</div></div>
+    <div class="rep">
+      <div>3 of 3 pledge done — small target, perfectly hit.</div>
+      <div>First sub-25 min 5 k — standout cardio result.</div>
+      <div>Strength work minimal; his clearest growth area.</div>
+      <div>Good recovery and consistent sleep.</div>
+      <div>Quietly moving up the table (▲). Rank #4.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="rephead"><div class="av c2">Mc</div><div class="mn">Marco</div><span class="reptag warn">Flag</span><div class="ci">1 740 IC</div></div>
+    <div class="rep">
+      <div>Behind pledge: 2 of 5 sessions — accountability flag.</div>
+      <div>Protein nailed 7/7 — nutrition is his strength.</div>
+      <div>Cardio and volume both lagging this month.</div>
+      <div>Needs a nudge to re-engage before the week closes.</div>
+      <div>At relegation risk if the trend doesn't turn. Rank #5.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="rephead"><div class="av">N</div><div class="mn">Nina</div><span class="reptag warn">At risk</span><div class="ci">1 240 IC</div></div>
+    <div class="rep">
+      <div>Behind: 1 of 4 sessions — her toughest month.</div>
+      <div>Travel disrupted the routine and momentum stalled.</div>
+      <div>Recovery metrics fine — the capacity is clearly there.</div>
+      <div>Sitting in the relegation zone (▼). Rank #6.</div>
+      <div>One strong week flips it — a nudge has been sent.</div>
+    </div>
+  </div>
+</section>
+
 <nav class="nav">
   <button class="on" data-t="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Today</button>
   <button data-t="body"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2.4"/><path d="M12 8v7M12 9l-4 2M12 9l4 2M12 15l-3 5M12 15l3 5"/></svg>Body</button>
   <button data-t="train"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8v8M18 8v8M3 12h18M3 9v6M21 9v6"/></svg>Train</button>
   <button data-t="fuel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v7a3 3 0 006 0V3M9 3v18M17 3c-2 0-3 3-3 6s1 4 3 4v8"/></svg>Fuel</button>
   <button data-t="game"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 2.6 1-5.5-4-3.9 5.5-.8z" transform="scale(.85) translate(2 1)"/></svg>Squad</button>
+  <button data-t="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3.5 20c0-3 2.7-5 5.5-5s5.5 2 5.5 5"/><path d="M16 6a3 3 0 010 6M20.5 20c0-2.4-1.4-4-3.5-4.6"/></svg>Team</button>
 </nav>
 </div>
 
@@ -879,6 +979,27 @@ applyTheme(start);
       b.classList.add('done');b.textContent='👊 Nudged';
     });
   });
+})();
+
+// ---- pot: team vote ----
+(function(){
+  const K='mo-vote', base={exp:3,cause:2,ski:1};
+  let mine=null; try{mine=localStorage.getItem(K)}catch(e){}
+  const save=v=>{try{localStorage.setItem(K,v)}catch(e){}};
+  function render(){
+    const c={...base}; if(mine&&c[mine]!=null)c[mine]++;
+    const total=Object.values(c).reduce((a,b)=>a+b,0)||1;
+    const max=Math.max(...Object.values(c));
+    Object.keys(c).forEach(k=>{
+      const vc=document.querySelector('.vc[data-opt="'+k+'"]'); if(vc)vc.textContent=c[k];
+      const bar=document.querySelector('.vbar[data-opt="'+k+'"]'); if(bar)bar.style.width=Math.round(c[k]/total*100)+'%';
+      const ld=document.querySelector('.ldr[data-opt="'+k+'"]'); if(ld)ld.textContent=(c[k]===max?'★ leading':'');
+      const btn=document.querySelector('.btn.vote[data-opt="'+k+'"]');
+      if(btn){if(mine===k){btn.textContent='✓ Your vote';btn.classList.add('done');}else{btn.textContent='Vote';btn.classList.remove('done');}}
+    });
+  }
+  document.querySelectorAll('.btn.vote').forEach(b=>b.addEventListener('click',()=>{mine=b.dataset.opt;save(mine);render();}));
+  render();
 })();
 </script>
 </body>
