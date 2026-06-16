@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MO Performance Cockpit</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgcng9IjEzIiBmaWxsPSIjOGUxYjFiIi8+CjxnIGZpbGw9IiNiODg2MGIiPgo8cGF0aCBkPSJNMzIgOGw0IDYgNy0zLTEgOCA4IDEtNSA2IDYgNS04IDMgMyA3LTgtMS0xIDgtNS02LTUgNi0xLTgtOCAxIDMtNy04LTMgNi01LTUtNiA4LTEtMS04IDcgM3oiLz4KPC9nPgo8Y2lyY2xlIGN4PSIyMiIgY3k9IjIyIiByPSI1IiBmaWxsPSIjYjg4NjBiIi8+CjxjaXJjbGUgY3g9IjQyIiBjeT0iMjIiIHI9IjUiIGZpbGw9IiNiODg2MGIiLz4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMyIgcj0iMTUiIGZpbGw9IiNlOGI5MjMiLz4KPGNpcmNsZSBjeD0iMjYiIGN5PSIzMSIgcj0iMi40IiBmaWxsPSIjOGUxYjFiIi8+CjxjaXJjbGUgY3g9IjM4IiBjeT0iMzEiIHI9IjIuNCIgZmlsbD0iIzhlMWIxYiIvPgo8cGF0aCBkPSJNMzIgMzVsNCA1aC04eiIgZmlsbD0iIzhlMWIxYiIvPgo8cGF0aCBkPSJNMzIgNDB2NCIgc3Ryb2tlPSIjOGUxYjFiIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNMjIgMzljNCAzIDE2IDMgMjAgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYjg4NjBiIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
 :root{
@@ -254,6 +255,51 @@ a.vthumb .pl{position:absolute;inset:0;margin:auto;width:26px;height:26px}
 .strikewk i.hit{background:var(--a1);color:#06080c;border-color:var(--a1);box-shadow:0 0 10px -3px var(--a1)}
 .strikewk i.today{border-color:var(--a1);color:var(--a1)}
 .fprog{stroke:var(--a2);filter:drop-shadow(0 0 6px var(--a2))}
+
+/* squad / social gamification */
+.squadcard{background:linear-gradient(135deg,var(--card2),var(--bg2));border:1px solid var(--a1)}
+.sqtop{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px}
+.sqname{font-size:16px;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:-.01em}
+.sqsub{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-top:2px}
+.league{margin-left:auto;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#06080c;background:linear-gradient(90deg,var(--a1d),var(--a1));padding:5px 9px;border-radius:6px;white-space:nowrap}
+.coinrow{display:flex;gap:9px}
+.coinbox{flex:1;background:var(--card);border:1px solid var(--line2);border-radius:11px;padding:11px 6px;text-align:center}
+.coinbox .cnum{font-size:21px;font-weight:800;font-style:italic;color:var(--a1)}
+.coinbox .clab{font-size:8px;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-top:3px;line-height:1.2}
+.mrow{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:none}
+.av{width:34px;height:34px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-style:italic;color:#06080c;background:linear-gradient(150deg,var(--a1d),var(--a1))}
+.av.c2{background:linear-gradient(150deg,#2a9,#5cd6e6)}
+.av.c3{background:linear-gradient(150deg,#a76,#e0a24a)}
+.mrow .mm{flex:1;min-width:0}
+.mrow .mn{font-size:12.5px;font-weight:700}
+.mrow .ms{font-size:10px;color:var(--sub);margin-top:1px;text-transform:uppercase;letter-spacing:.03em;font-weight:600}
+.mrow .mbar{height:5px;background:rgba(255,255,255,.05);border-radius:20px;margin-top:5px;overflow:hidden}
+.mrow .mbar>i{display:block;height:100%;border-radius:20px;background:var(--a1)}
+.mrow .mbar>i.warn{background:var(--a3)}
+.btn{flex:none;font-family:inherit;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border-radius:7px;padding:7px 10px;cursor:pointer;border:1px solid var(--a1);background:none;color:var(--a1);white-space:nowrap;transition:transform .12s ease}
+.btn:active{transform:scale(.93)}
+.btn.props{border-color:var(--a4);color:var(--a4)}
+.btn.done{border-color:var(--line2);color:var(--sub);cursor:default}
+.lbrow{display:flex;align-items:center;gap:11px;padding:9px 9px;border-radius:9px;margin-bottom:4px}
+.lbrow.promo{background:rgba(198,255,47,.06);border:1px solid rgba(198,255,47,.22)}
+.lbrow.you{background:rgba(255,255,255,.05);border:1px solid var(--line2)}
+.lbrow.releg{background:rgba(255,106,61,.06);border:1px solid rgba(255,106,61,.22)}
+.lbrow .rk{width:18px;text-align:center;font-size:12px;font-weight:800;font-style:italic;color:var(--sub)}
+.lbrow .mn{flex:1;font-size:12.5px;font-weight:700}
+.lbrow .ci{font-size:11px;font-weight:800;font-style:italic;color:var(--a1);white-space:nowrap}
+.lbrow .mv{width:20px;text-align:center;font-size:11px;font-weight:800}
+.zonelab{font-size:8.5px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;margin:9px 0 6px}
+.zonelab.up{color:var(--a1)}.zonelab.down{color:var(--a3)}
+.duel{display:flex;align-items:center;gap:12px;margin:8px 0 4px}
+.duel .side{flex:1;text-align:center}
+.duel .sn{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.duel .sv{font-size:22px;font-weight:800;font-style:italic;color:var(--a1)}
+.duel .vs{font-size:12px;font-weight:800;font-style:italic;color:var(--sub)}
+.gchal .gtop{display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--sub);font-weight:700;margin-bottom:6px}
+.gchal .gbar{height:9px;background:rgba(255,255,255,.05);border-radius:20px;overflow:hidden}
+.gchal .gbar>i{display:block;height:100%;background:linear-gradient(90deg,var(--a1d),var(--a1));border-radius:20px;box-shadow:0 0 10px -2px var(--a1)}
+.note{font-size:10.5px;color:var(--sub);line-height:1.45;margin-top:10px;border-left:2px solid var(--a3);padding-left:9px}
 </style>
 </head>
 <body>
@@ -571,6 +617,40 @@ a.vthumb .pl{position:absolute;inset:0;margin:auto;width:26px;height:26px}
     </div>
     <div class="streak" style="margin-top:15px">🔥 <span>23-Day Streak</span> <span style="font-weight:600;color:var(--sub);font-size:11px;font-style:normal;text-transform:none">· longest 41</span></div>
   </div>
+
+  <div class="card squadcard">
+    <div class="sqtop">
+      <div><div class="sqname">Hilton Athletic Club</div><div class="sqsub">6 members · Season 2 · Week 7</div></div>
+      <div class="league">🏆 Gold League</div>
+    </div>
+    <div class="coinrow">
+      <div class="coinbox"><div class="cnum">340</div><div class="clab">Your Iron Coins</div></div>
+      <div class="coinbox"><div class="cnum" id="propsLeft">5</div><div class="clab">Props to give</div></div>
+      <div class="coinbox"><div class="cnum">#2</div><div class="clab">Rank this week</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>This week's commitments</h3>
+    <p class="cap">Everyone pledged a target · nudge anyone falling behind</p>
+    <div class="mrow"><div class="av">M</div><div class="mm"><div class="mn">You — Moritz</div><div class="ms">4 / 5 sessions · on track</div><div class="mbar"><i style="width:80%"></i></div></div></div>
+    <div class="mrow"><div class="av c2">L</div><div class="mm"><div class="mn">Luca</div><div class="ms">5 / 6 sessions · on track</div><div class="mbar"><i style="width:83%"></i></div></div></div>
+    <div class="mrow"><div class="av c3">S</div><div class="mm"><div class="mn">Sofia</div><div class="ms">4 / 4 sessions · done ✓</div><div class="mbar"><i style="width:100%"></i></div></div></div>
+    <div class="mrow"><div class="av">N</div><div class="mm"><div class="mn">Nina</div><div class="ms">1 / 4 sessions · behind</div><div class="mbar"><i class="warn" style="width:25%"></i></div></div><button class="btn nudge" data-id="nina">👊 Nudge</button></div>
+    <div class="mrow"><div class="av c2">Mc</div><div class="mm"><div class="mn">Marco</div><div class="ms">2 / 5 sessions · behind</div><div class="mbar"><i class="warn" style="width:40%"></i></div></div><button class="btn nudge" data-id="marco">👊 Nudge</button></div>
+    <div class="mrow"><div class="av c3">T</div><div class="mm"><div class="mn">Tobias</div><div class="ms">3 / 3 sessions · done ✓</div><div class="mbar"><i style="width:100%"></i></div></div></div>
+    <div class="note">Miss your weekly pledge and 50 IC goes into the squad pot — split among everyone who hit theirs.</div>
+  </div>
+
+  <div class="card">
+    <h3>Give props</h3>
+    <p class="cap"><span id="propsLeft2">5</span> props left this week · +25 IC each to a teammate</p>
+    <div class="mrow"><div class="av c2">L</div><div class="mm"><div class="mn">Luca</div><div class="ms">PR · back squat 100 kg</div></div><button class="btn props" data-id="luca-pr">Give props</button></div>
+    <div class="mrow"><div class="av c3">S</div><div class="mm"><div class="mn">Sofia</div><div class="ms">14-day streak unlocked</div></div><button class="btn props" data-id="sofia-streak">Give props</button></div>
+    <div class="mrow"><div class="av c3">T</div><div class="mm"><div class="mn">Tobias</div><div class="ms">First sub-25 min 5 km</div></div><button class="btn props" data-id="tobias-5k">Give props</button></div>
+    <div class="mrow"><div class="av c2">Mc</div><div class="mm"><div class="mn">Marco</div><div class="ms">Hit protein 7 / 7 days</div></div><button class="btn props" data-id="marco-protein">Give props</button></div>
+  </div>
+
   <div class="card">
     <h3>Weekly quests</h3><p class="cap">Complete for XP — resets Sunday</p>
     <div class="quest"><div class="ic">🏋️</div><div class="meta"><div class="nm">Hit protein target 5 days</div><div class="pr">3 / 5 days</div><div class="minibar"><i style="width:60%"></i></div></div><div class="rew">+150</div></div>
@@ -592,10 +672,33 @@ a.vthumb .pl{position:absolute;inset:0;margin:auto;width:26px;height:26px}
     </div>
   </div>
   <div class="card">
-    <h3>Squad leaderboard</h3><p class="cap">This week · Strava + cockpit XP</p>
-    <div class="quest"><div class="ic">🥇</div><div class="meta"><div class="nm">Luca</div><div class="pr">3 120 XP</div></div></div>
-    <div class="quest"><div class="ic">🥈</div><div class="meta"><div class="nm">You — Moritz</div><div class="pr">2 940 XP</div></div></div>
-    <div class="quest"><div class="ic">🥉</div><div class="meta"><div class="nm">Sofia</div><div class="pr">2 610 XP</div></div></div>
+    <h3>Weekly leaderboard — Gold League</h3>
+    <p class="cap">Iron Coins this week · resets Sunday 23:59</p>
+    <div class="zonelab up">▲ Promotion zone — top 2 move to Platinum</div>
+    <div class="lbrow promo"><div class="rk">1</div><div class="mn">Luca</div><div class="ci">3 120 IC</div><div class="mv up">▲</div></div>
+    <div class="lbrow promo you"><div class="rk">2</div><div class="mn">You — Moritz</div><div class="ci">2 940 IC</div><div class="mv up">▲</div></div>
+    <div class="lbrow"><div class="rk">3</div><div class="mn">Sofia</div><div class="ci">2 610 IC</div><div class="mv">▬</div></div>
+    <div class="lbrow"><div class="rk">4</div><div class="mn">Tobias</div><div class="ci">2 180 IC</div><div class="mv up">▲</div></div>
+    <div class="lbrow"><div class="rk">5</div><div class="mn">Marco</div><div class="ci">1 740 IC</div><div class="mv down">▼</div></div>
+    <div class="zonelab down">▼ Relegation zone — bottom 1 drops to Silver</div>
+    <div class="lbrow releg"><div class="rk">6</div><div class="mn">Nina</div><div class="ci">1 240 IC</div><div class="mv down">▼</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Live challenges</h3>
+    <p class="cap">Head-to-head &amp; squad goals · winners split the pot</p>
+    <div style="font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:2px">Duel · Zone 2 minutes</div>
+    <div class="duel">
+      <div class="side"><div class="sn">You</div><div class="sv">60</div></div>
+      <div class="vs">VS</div>
+      <div class="side"><div class="sn">Luca</div><div class="sv">75</div></div>
+    </div>
+    <div class="note" style="border-color:var(--a2);color:var(--sub)">15 min behind — one easy session flips it. Winner takes 100 IC.</div>
+    <div class="gchal" style="margin-top:16px">
+      <div class="gtop"><span>Squad goal · 30 sessions</span><span>22 / 30</span></div>
+      <div class="gbar"><i style="width:73%"></i></div>
+      <div class="note" style="border-color:var(--a1);color:var(--sub)">Hit it as a group by Sunday to unlock a 600 IC pot — split evenly — plus a guilt-free rest-day pass.</div>
+    </div>
   </div>
 </section>
 
@@ -604,7 +707,7 @@ a.vthumb .pl{position:absolute;inset:0;margin:auto;width:26px;height:26px}
   <button data-t="body"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2.4"/><path d="M12 8v7M12 9l-4 2M12 9l4 2M12 15l-3 5M12 15l3 5"/></svg>Body</button>
   <button data-t="train"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8v8M18 8v8M3 12h18M3 9v6M21 9v6"/></svg>Train</button>
   <button data-t="fuel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v7a3 3 0 006 0V3M9 3v18M17 3c-2 0-3 3-3 6s1 4 3 4v8"/></svg>Fuel</button>
-  <button data-t="game"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 2.6 1-5.5-4-3.9 5.5-.8z" transform="scale(.85) translate(2 1)"/></svg>Game</button>
+  <button data-t="game"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 2.6 1-5.5-4-3.9 5.5-.8z" transform="scale(.85) translate(2 1)"/></svg>Squad</button>
 </nav>
 </div>
 
@@ -746,6 +849,37 @@ function buildCharts(t){
 let start='carbon';
 try{const s=localStorage.getItem('mo-theme'); if(s&&THEMES[s])start=s;}catch(e){}
 applyTheme(start);
+
+// ---- squad: give props + nudge ----
+(function(){
+  const PK='mo-sq-given', NK='mo-sq-nudged';
+  const get=k=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(e){return[]}};
+  const set=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+  let given=get(PK), nudged=get(NK);
+  let left=5-given.length; if(left<0)left=0;
+  const p1=document.getElementById('propsLeft'), p2=document.getElementById('propsLeft2');
+  const sync=()=>{if(p1)p1.textContent=left;if(p2)p2.textContent=left;};
+  sync();
+  document.querySelectorAll('.btn.props').forEach(b=>{
+    const id=b.dataset.id;
+    if(given.includes(id)){b.classList.add('done');b.classList.remove('props');b.textContent='✓ +25 sent';}
+    b.addEventListener('click',()=>{
+      if(b.classList.contains('done'))return;
+      if(left<=0){b.textContent='No props left';return;}
+      given.push(id);set(PK,given);left--;sync();
+      b.classList.add('done');b.classList.remove('props');b.textContent='✓ +25 sent';
+    });
+  });
+  document.querySelectorAll('.btn.nudge').forEach(b=>{
+    const id=b.dataset.id;
+    if(nudged.includes(id)){b.classList.add('done');b.textContent='👊 Nudged';}
+    b.addEventListener('click',()=>{
+      if(b.classList.contains('done'))return;
+      nudged.push(id);set(NK,nudged);
+      b.classList.add('done');b.textContent='👊 Nudged';
+    });
+  });
+})();
 </script>
 </body>
 </html>
