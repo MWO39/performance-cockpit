@@ -247,6 +247,13 @@ a.vthumb .pl{position:absolute;inset:0;margin:auto;width:26px;height:26px}
 .iphase .pm .nm{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:-.01em}
 .iphase .pm .wks{font-size:9.5px;color:var(--a1d);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
 .iphase .pm .rec{font-size:11px;color:var(--sub);margin-top:4px;line-height:1.45}
+
+/* strike week */
+.strikewk{display:flex;gap:5px;margin-top:8px}
+.strikewk i{flex:1;height:26px;border-radius:6px;border:1px solid var(--line2);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:800;color:var(--sub);text-transform:uppercase;font-style:normal}
+.strikewk i.hit{background:var(--a1);color:#06080c;border-color:var(--a1);box-shadow:0 0 10px -3px var(--a1)}
+.strikewk i.today{border-color:var(--a1);color:var(--a1)}
+.fprog{stroke:var(--a2);filter:drop-shadow(0 0 6px var(--a2))}
 </style>
 </head>
 <body>
@@ -290,6 +297,15 @@ a.vthumb .pl{position:absolute;inset:0;margin:auto;width:26px;height:26px}
       <h3>Physical age</h3>
       <div style="font-size:13px;color:var(--ink);font-weight:800;font-style:italic;text-transform:uppercase">7 yrs younger than calendar</div>
       <div style="font-size:11px;color:var(--sub);margin-top:4px;line-height:1.45">Estimated from VO₂max 51, resting HR 48, body-fat % and activity load. Trending down.</div>
+    </div>
+  </div>
+
+  <div class="card agecard">
+    <div><div class="big">4</div><div class="ulab">of 7</div></div>
+    <div style="flex:1">
+      <h3>Strike — days trained</h3>
+      <div class="strikewk"><i class="hit">Mo</i><i class="hit">Tu</i><i class="hit today">We</i><i>Th</i><i class="hit">Fr</i><i>Sa</i><i>Su</i></div>
+      <div style="font-size:11px;color:var(--sub);margin-top:7px;line-height:1.4">4 of the last 7 days trained · 2 more this week to hit your goal of 6.</div>
     </div>
   </div>
 
@@ -339,6 +355,28 @@ a.vthumb .pl{position:absolute;inset:0;margin:auto;width:26px;height:26px}
 <!-- ===== BODY ===== -->
 <section class="tab" id="body">
   <div class="aicoach" id="ai-body"></div>
+
+  <div class="card">
+    <h3>Fasting — Zero</h3>
+    <p class="cap">16:8 protocol · synced from Zero</p>
+    <div class="ring-wrap">
+      <div class="gauge" style="width:96px;height:96px">
+        <svg width="96" height="96" viewBox="0 0 96 96">
+          <circle class="gtrack" cx="48" cy="48" r="40" fill="none" stroke-width="9"/>
+          <circle class="fprog" cx="48" cy="48" r="40" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="23"/>
+        </svg>
+        <div class="val"><div class="num" style="font-size:19px">14:32</div><div class="lab">of 16h</div></div>
+      </div>
+      <div class="leg" style="font-size:12px;line-height:1.9">
+        <div><b style="color:var(--a2)">Current fast</b> · 91%</div>
+        <div><b>7-day avg</b> · 15h 10m</div>
+        <div><b>Longest</b> · 18h 04m</div>
+        <div><b>Window opens</b> · 12:30</div>
+      </div>
+    </div>
+    <div class="src"><span class="pill o">Zero</span><span class="pill b">Apple Health</span></div>
+  </div>
+
   <h2 class="sec">// Body composition</h2>
   <div class="stats">
     <div class="stat" style="--accentbar:var(--a2)"><div class="k">Weight</div><div class="v">79.4 <small>kg</small></div><div class="delta down">▼ 1.8kg / 8wk</div></div>
